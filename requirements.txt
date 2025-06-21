@@ -1,0 +1,8 @@
+pyscf==2.9.0
+qiskit==0.45.1
+qiskit-aer==0.13.3
+qiskit-algorithms==0.2.1
+qiskit-nature==0.7.1
+qiskit-terra==0.45.1
+matplotlib==3.10.3
+pylatexenc==2.10

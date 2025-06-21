@@ -2,8 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import minimize
 
-from qiskit.primitives import Estimator
+from qiskit.primitives import Estimator, Sampler
 from qiskit import ClassicalRegister, transpile
+from qiskit_algorithms import VQD
+from qiskit_algorithms.state_fidelities import ComputeUncompute
 from qiskit.algorithms.optimizers import COBYLA
 from qiskit_aer import AerSimulator
 from qiskit.quantum_info import Statevector
@@ -109,4 +111,35 @@ def simulate_measurement(ansatz, optimal_params, backend=AerSimulator()):
     result = backend.run(transpiled).result()
     counts = result.get_counts()
     return counts
+
+
+def run_vqd(hamiltonian, ansatz, k, optimizer_method=COBYLA, maxiter=1000):
+    """
+    Ejecuta el algoritmo VQD para encontrar múltiples autovalores de un Hamiltoniano.
+
+    Args:
+        hamiltonian (PauliSumOp): Hamiltoniano del sistema.
+        ansatz (QuantumCircuit): Circuito ansatz parametrizado.
+        optimizer_method (Optimizer, optional): Instancia del optimizador a utilizar. Por defecto usa COBYLA.
+        k (int): Número de autovalores a calcular.
+        maxiter (int): Máximo de iteraciones del optimizador.
+
+    Returns:
+        VQEResult: Resultado con energías y parámetros óptimos.
+    """
+    estimator = Estimator()
+    sampler = Sampler()
+    fidelity = ComputeUncompute(sampler=sampler)
+
+    vqd = VQD(
+        estimator=estimator,
+        fidelity=fidelity,
+        ansatz=ansatz,
+        optimizer=optimizer_method(maxiter=maxiter),
+        k=k
+    )
+
+    result = vqd.compute_eigenvalues(hamiltonian)
+    return result
+
 
